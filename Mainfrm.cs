@@ -263,7 +263,7 @@ namespace PS4SDT
                     mm = 0x01;
                     break;
                 case 1:
-                    mm = 0x2 || 0x8;
+                    mm = 10u;
                     break;
             }
         }
