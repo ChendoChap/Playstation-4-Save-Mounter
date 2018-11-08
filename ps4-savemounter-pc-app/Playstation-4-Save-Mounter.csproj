@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{ECCE1A6B-C96F-4D7A-B9FF-99739DC10993}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>WinExe</OutputType>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>Playstation 4 Save Mounter</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <HintPath>C:\Windows\assembly\GAC_MSIL\System\2.0.0.0__b77a5c561934e089\System.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>C:\Windows\assembly\GAC_MSIL\System.Windows.Forms\2.0.0.0__b77a5c561934e089\System.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <HintPath>C:\Windows\assembly\GAC_MSIL\System.Drawing\2.0.0.0__b03f5f7f11d50a3a\System.Drawing.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="libdebug\acc.cs" />
+    <Compile Include="libdebug\dbregs.cs" />
+    <Compile Include="libdebug\envxmm.cs" />
+    <Compile Include="libdebug\fpregs.cs" />
+    <Compile Include="libdebug\MemoryEntry.cs" />
+    <Compile Include="libdebug\Process.cs" />
+    <Compile Include="libdebug\ProcessInfo.cs" />
+    <Compile Include="libdebug\ProcessList.cs" />
+    <Compile Include="libdebug\ProcessMap.cs" />
+    <Compile Include="libdebug\PS4DBG.cs" />
+    <Compile Include="libdebug\regs.cs" />
+    <Compile Include="libdebug\savefpu_xstate.cs" />
+    <Compile Include="libdebug\ThreadInfo.cs" />
+    <Compile Include="libdebug\xmmacc.cs" />
+    <Compile Include="libdebug\xstate_hdr.cs" />
+    <Compile Include="libdebug\ymmacc.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PS4SDT.Properties\Resources.cs" />
+    <Compile Include="PS4SDT.Properties\Settings.cs" />
+    <Compile Include="PS4SDT\Mainfrm.cs" />
+    <Compile Include="PS4SDT\offsets.cs" />
+    <Compile Include="PS4SDT\Program.cs" />
+    <Compile Include="PS4SDT\SceSaveDataDirName.cs" />
+    <Compile Include="PS4SDT\SceSaveDataDirNameSearchCond.cs" />
+    <Compile Include="PS4SDT\SceSaveDataDirNameSearchResult.cs" />
+    <Compile Include="PS4SDT\SceSaveDataFingerprint.cs" />
+    <Compile Include="PS4SDT\SceSaveDataMount2.cs" />
+    <Compile Include="PS4SDT\SceSaveDataMountPoint.cs" />
+    <Compile Include="PS4SDT\SceSaveDataMountResult.cs" />
+    <Compile Include="PS4SDT\SceSaveDataParam.cs" />
+    <Compile Include="PS4SDT\SceSaveDataSearchInfo.cs" />
+    <Compile Include="PS4SDT\SceSaveDataTitleId.cs" />
+    <Compile Include="PS4SDT\SceSaveDataTransferringMount.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
