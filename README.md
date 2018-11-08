@@ -2,6 +2,10 @@
 
 ## Summary
 This program allows you to mount save data as READ/WRITE
+### You can
+* Make decrypted copies of your saves
+* Replace saves with modified ones
+* Replace save files with someonelse's save files (share saves)
 ## Prerequisites
 * PS4 5.05
 * FTP Client
