@@ -34,6 +34,10 @@ This program allows you to mount save data as READ/WRITE
 12) Your save is now mounted and accessible from ftp in /mnt/pfs/ & in /mnt/sandbox/{title}/savedataX (it's the same just a different dir)
 13) After you're done copying/replacing files click 'Unmount'
 
+**don't replace files in sce_sys directory, it is unnecessary and will probably corrupt your save**
+
+
+
 **Some games use another save format, they have an sce_ prefix in their name (saves can be found in /user/home/{userid}/savedata/{titleid} check the name there). they won't show up as search results**  
 **This can probably be patched but I was too lazy** 
 
