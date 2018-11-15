@@ -67,3 +67,6 @@ Here's a workaround
 - [ChendoChap](https://github.com/ChendoChap)
 ## Acknowledgments
 * [golden](https://github.com/xemio)
+
+## Design
+[design]([https://i.imgur.com/mgO2gA3.png)
