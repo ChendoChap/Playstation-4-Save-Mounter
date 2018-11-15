@@ -69,4 +69,4 @@ Here's a workaround
 * [golden](https://github.com/xemio)
 
 ## Design
-![design]([https://i.imgur.com/mgO2gA3.png)
+![design](https://i.imgur.com/mgO2gA3.png)
