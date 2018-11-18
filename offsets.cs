@@ -12,5 +12,8 @@ namespace PS4SDT
         public const int sceSaveDataUmount = 0x250C0;
         public const int sceSaveDataDirNameSearch = 0x25CA0;
         public const int sceSaveDataTransferringMount = 0x24F70;
+		
+        public const int malloc = 0x23D90;
+        public const int free = 0x23E20;
     }
 }

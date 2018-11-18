@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.FindIP_Button = new System.Windows.Forms.Button();
             this.IP_TextBox = new System.Windows.Forms.TextBox();
             this.Connect_Button = new System.Windows.Forms.Button();
             this.RefreshProc_Button = new System.Windows.Forms.Button();
@@ -42,28 +41,18 @@
             this.MountMode_ComboBox = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
-            // FindIP_Button
-            // 
-            this.FindIP_Button.Location = new System.Drawing.Point(12, 12);
-            this.FindIP_Button.Name = "FindIP_Button";
-            this.FindIP_Button.Size = new System.Drawing.Size(129, 21);
-            this.FindIP_Button.TabIndex = 0;
-            this.FindIP_Button.Text = "Find Playstation";
-            this.FindIP_Button.UseVisualStyleBackColor = true;
-            this.FindIP_Button.Click += new System.EventHandler(this.FindIP_Button_Click);
-            // 
             // IP_TextBox
             // 
-            this.IP_TextBox.Location = new System.Drawing.Point(147, 13);
+            this.IP_TextBox.Location = new System.Drawing.Point(13, 14);
             this.IP_TextBox.Name = "IP_TextBox";
-            this.IP_TextBox.Size = new System.Drawing.Size(108, 20);
+            this.IP_TextBox.Size = new System.Drawing.Size(180, 20);
             this.IP_TextBox.TabIndex = 1;
             // 
             // Connect_Button
             // 
-            this.Connect_Button.Location = new System.Drawing.Point(261, 13);
+            this.Connect_Button.Location = new System.Drawing.Point(200, 13);
             this.Connect_Button.Name = "Connect_Button";
-            this.Connect_Button.Size = new System.Drawing.Size(129, 21);
+            this.Connect_Button.Size = new System.Drawing.Size(185, 21);
             this.Connect_Button.TabIndex = 2;
             this.Connect_Button.Text = "Connnect";
             this.Connect_Button.UseVisualStyleBackColor = true;
@@ -174,17 +163,14 @@
             this.Controls.Add(this.RefreshProc_Button);
             this.Controls.Add(this.Connect_Button);
             this.Controls.Add(this.IP_TextBox);
-            this.Controls.Add(this.FindIP_Button);
             this.Name = "Mainfrm";
-            this.Text = "Playstation 4 Save Mounter";
+            this.Text = "Playstation 4 Save Mounter 1.1 [jkpatch]";
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Button FindIP_Button;
         private System.Windows.Forms.TextBox IP_TextBox;
         private System.Windows.Forms.Button Connect_Button;
         private System.Windows.Forms.Button RefreshProc_Button;

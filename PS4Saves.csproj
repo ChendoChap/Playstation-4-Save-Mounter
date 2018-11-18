@@ -45,19 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="librpc\Process.cs" />
+    <Compile Include="librpc\PS4RPC.cs" />
     <Compile Include="Mainfrm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Mainfrm.Designer.cs">
       <DependentUpon>Mainfrm.cs</DependentUpon>
     </Compile>
-    <Compile Include="libdebug\Process.cs" />
-    <Compile Include="libdebug\PS4DBG.Console.cs" />
-    <Compile Include="libdebug\PS4DBG.cs" />
-    <Compile Include="libdebug\PS4DBG.Debug.cs" />
-    <Compile Include="libdebug\PS4DBG.Kernel.cs" />
-    <Compile Include="libdebug\PS4DBG.Proc.cs" />
-    <Compile Include="libdebug\Registers.cs" />
     <Compile Include="offsets.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

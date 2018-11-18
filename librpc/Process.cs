@@ -1,6 +1,7 @@
-using System.Runtime.InteropServices;
+﻿/* golden */
+/* 2/12/2018 */
 
-namespace libdebug
+namespace librpc
 {
     public class Process
     {
@@ -20,7 +21,7 @@ namespace libdebug
         }
         public override string ToString()
         {
-            return $"[{pid}] {name}";
+            return $"[{pid}] - {name}";
         }
     }
 
@@ -54,7 +55,7 @@ namespace libdebug
         {
             foreach (Process p in processes)
             {
-                if (contains)
+                if(contains)
                 {
                     if (p.name.Contains(name))
                     {
@@ -81,25 +82,20 @@ namespace libdebug
         public ulong end;
         public ulong offset;
         public uint prot;
-
-        public override string ToString()
-        {
-            return $"{name} 0x{start:X}";
-        }
     }
 
-    public class ProcessMap
+    public class ProcessInfo
     {
         public int pid;
         public MemoryEntry[] entries;
 
         /// <summary>
-        /// Initializes ProcessMap class with memory entries and process ID
+        /// Initializes ProcessInfo class with memory entries and process ID
         /// </summary>
         /// <param name="pid">Process ID</param>
         /// <param name="entries">Process memory entries</param>
         /// <returns></returns>
-        public ProcessMap(int pid, MemoryEntry[] entries)
+        public ProcessInfo(int pid, MemoryEntry[] entries)
         {
             this.pid = pid;
             this.entries = entries;
@@ -109,25 +105,14 @@ namespace libdebug
         /// Finds a virtual memory entry based off name
         /// </summary>
         /// <param name="name">Virtual memory entry name</param>
-        /// <param name="contains">Condition to check if entry name contains name</param>
         /// <returns></returns>
-        public MemoryEntry FindEntry(string name, bool contains = false)
+        public MemoryEntry FindEntry(string name)
         {
             foreach (MemoryEntry entry in entries)
             {
-                if (contains)
+                if (entry.name == name)
                 {
-                    if (entry.name.Contains(name))
-                    {
-                        return entry;
-                    }
-                }
-                else
-                {
-                    if (entry.name == name)
-                    {
-                        return entry;
-                    }
+                    return entry;
                 }
             }
 
@@ -151,33 +136,5 @@ namespace libdebug
 
             return null;
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-    public struct ProcessInfo
-    {
-        public int pid;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 40)]
-        public string name;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string path;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
-        public string titleid;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string contentid;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-    public struct ThreadInfo
-    {
-        public int pid;
-        public int priority;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string name;
     }
 }

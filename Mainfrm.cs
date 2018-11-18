@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using libdebug;
+using librpc;
 
 namespace PS4SDT
 {
     public partial class Mainfrm : Form
     {
-        PS4DBG ps4;
+        PS4RPC ps4;
         public Mainfrm()
         {
             InitializeComponent();
@@ -18,23 +18,13 @@ namespace PS4SDT
         private ulong stub;
         private ulong libSceUserServiceBase = 0x0;
         private ulong libSceSaveDataBase = 0x0;
+        private ulong libSceLibcInternalBase = 0x0;
         private string mp;
         private uint mm = 0x1;
-        private void FindIP_Button_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                IP_TextBox.Text = PS4DBG.FindPlayStation();
-            }
-            catch
-            {
-                MessageBox.Show("Couldn't find ps4","Failed");
-            }
-        }
-
+        
         private void Connect_Button_Click(object sender, EventArgs e)
         {
-            ps4 = new PS4DBG(IP_TextBox.Text);
+            ps4 = new PS4RPC(IP_TextBox.Text);
             ps4.Connect();
         }
 
@@ -50,23 +40,40 @@ namespace PS4SDT
             {
                 return;
             }
-            var pm = ps4.GetProcessMaps(pid);
-            libSceUserServiceBase = pm.FindEntry("libSceUserService.sprx").start;
-            var   a   = pm.FindEntry("libSceSaveData.sprx")?.start;
-            if (a != null)
+            var pi = ps4.GetProcessInfo(pid);
+
+            var tmp = pi.FindEntry("libSceSaveData.sprx")?.start;
+            if (tmp == null)
             {
-
-
-                libSceSaveDataBase = (ulong) a;
+                MessageBox.Show("savedata lib not found", "Error");
+                return;
             }
+            libSceSaveDataBase = (ulong)tmp;
 
-            if (pm.FindEntry("(NoName)clienthandler") == null)
+            tmp = pi.FindEntry("libSceUserService.sprx")?.start;
+            if (tmp == null)
+            {
+                MessageBox.Show("user service lib not found", "Error");
+                return;
+            }
+            libSceUserServiceBase = (ulong)tmp;
+
+            tmp = pi.FindEntry("libSceLibcInternal.sprx")?.start;
+            if (tmp == null)
+            {
+                MessageBox.Show("libcinternal not found", "Error");
+                return;
+            }
+            libSceLibcInternalBase = (ulong)tmp;
+
+
+            if (pi.FindEntry("(NoName)rpchandler") == null)
             {
                 stub = ps4.InstallRPC(pid);
                 return;
             }
 
-            stub = pm.FindEntry("(NoName)clienthandler").start;
+            stub = pi.FindEntry("(NoName)rpchandler").start;
         }
 
         private void FindDirs_Button_Click(object sender, EventArgs e)
@@ -75,12 +82,12 @@ namespace PS4SDT
             {
                 return;
             }
-            var pm = ps4.GetProcessMaps(pid);
-            if (pm.FindEntry("(NoName)clienthandler") == null)
+            var pi = ps4.GetProcessInfo(pid);
+            if (pi.FindEntry("(NoName)rpchandler") == null)
             {
                 return;
             }
-            var dirNameAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
+            var dirNameAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
             SceSaveDataDirNameSearchCond searchCond = new SceSaveDataDirNameSearchCond
             {
                 userId = InitialUser()
@@ -91,7 +98,7 @@ namespace PS4SDT
                 dirNamesNum = 1024
             };
             Dirs_ComboBox.DataSource = Find(searchCond, searchResult);
-            ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
+            free(dirNameAddr);
         }
 
         private void Mount_Button_Click(object sender, EventArgs e)
@@ -100,7 +107,7 @@ namespace PS4SDT
             {
                 return;
             }
-            var dirNameAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirName)));
+            var dirNameAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataDirName)));
             SceSaveDataDirName dirName = new SceSaveDataDirName
             {
                 data = Dirs_ComboBox.Text
@@ -121,7 +128,7 @@ namespace PS4SDT
             ps4.WriteMemory(pid, dirNameAddr, dirName);
             mp = Mount(mount, mountResult);
 
-            ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)));
+            free(dirNameAddr);
 
         }
 
@@ -146,26 +153,39 @@ namespace PS4SDT
         }
 
 
-        
+        private ulong malloc(int size, bool zero = true)
+        {
+            //what's a calloc?
+            var addr = ps4.Call(pid, stub, libSceLibcInternalBase + offsets.malloc, size);
+            if (zero)
+            {
+                ps4.WriteMemory(pid, addr, new byte[size]);
+            }
+            return addr;
+        }
 
+        private void free(ulong addr)
+        {
+            ps4.Call(pid, stub, libSceLibcInternalBase + offsets.free, addr);
+        }
 
         private int InitialUser()
         {
-            var bufferAddr = ps4.AllocateMemory(pid, sizeof(int));
+            var bufferAddr = malloc(sizeof(int));
 
             ps4.Call(pid, stub, libSceUserServiceBase + offsets.sceUserServiceGetInitialUser, bufferAddr);
 
             var id = ps4.ReadMemory<int>(pid, bufferAddr);
 
-            ps4.FreeMemory(pid, bufferAddr, sizeof(int));
+            free(bufferAddr);
 
             return id;
         }
 
         private string[] Find(SceSaveDataDirNameSearchCond searchCond, SceSaveDataDirNameSearchResult searchResult)
         {
-            var searchCondAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
-            var searchResultAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
+            var searchCondAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
+            var searchResultAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
 
             ps4.WriteMemory(pid, searchCondAddr, searchCond);
             ps4.WriteMemory(pid, searchResultAddr, searchResult);
@@ -178,13 +198,13 @@ namespace PS4SDT
                 {
                     dirs[i] = ps4.ReadMemory<string>(pid, searchResult.dirNames + i * 32);
                 }
-                ps4.FreeMemory(pid, searchCondAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
-                ps4.FreeMemory(pid, searchResultAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
+                free(searchCondAddr);
+                free(searchResultAddr);
                 return dirs;
             }
 
-            ps4.FreeMemory(pid, searchCondAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
-            ps4.FreeMemory(pid, searchResultAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
+            free(searchCondAddr);
+            free(searchResultAddr);
 
             return new string[0];
 
@@ -192,8 +212,8 @@ namespace PS4SDT
 
         private string Mount(SceSaveDataMount2 mount, SceSaveDataMountResult mountResult)
         {
-            var mountAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMount2)));
-            var mountResultAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+            var mountAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataMount2)));
+            var mountResultAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataMountResult)));
 
             ps4.WriteMemory(pid, mountAddr, mount);
             ps4.WriteMemory(pid, mountResultAddr, mountResult);
@@ -202,34 +222,34 @@ namespace PS4SDT
             {
                 mountResult = ps4.ReadMemory<SceSaveDataMountResult>(pid, mountResultAddr);
 
-                ps4.FreeMemory(pid, mountAddr, Marshal.SizeOf(typeof(SceSaveDataMount2)));
-                ps4.FreeMemory(pid, mountResultAddr, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+                free(mountAddr);
+                free(mountResultAddr);
 
                 return mountResult.mountPoint.data;
             }
 
-            ps4.FreeMemory(pid, mountAddr, Marshal.SizeOf(typeof(SceSaveDataMount2)));
-            ps4.FreeMemory(pid, mountResultAddr, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+            free(mountAddr);
+            free(mountResultAddr);
 
             return "";
         }
 
         private void Unmount(SceSaveDataMountPoint mountPoint)
         {
-            var mountPointAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMountPoint)));
+            var mountPointAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataMountPoint)));
 
             ps4.WriteMemory(pid, mountPointAddr, mountPoint);
 
             ps4.Call(pid, stub, libSceSaveDataBase + offsets.sceSaveDataUmount, mountPointAddr);
 
-            ps4.FreeMemory(pid, mountPointAddr, Marshal.SizeOf(typeof(SceSaveDataMountPoint)));
+            free(mountPointAddr);
             mp = null;
         }
 
         private string TransferMount(SceSaveDataTransferringMount mount, SceSaveDataMountResult mountResult)
         {
-            var mountAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataTransferringMount)));
-            var mountResultAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+            var mountAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataTransferringMount)));
+            var mountResultAddr = malloc(Marshal.SizeOf(typeof(SceSaveDataMountResult)));
 
             ps4.WriteMemory(pid, mountAddr, mount);
             ps4.WriteMemory(pid, mountResultAddr, mountResult);
@@ -238,14 +258,14 @@ namespace PS4SDT
             {
                 mountResult = ps4.ReadMemory<SceSaveDataMountResult>(pid, mountResultAddr);
 
-                ps4.FreeMemory(pid, mountAddr, Marshal.SizeOf(typeof(SceSaveDataTransferringMount)));
-                ps4.FreeMemory(pid, mountResultAddr, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+                free(mountAddr);
+                free(mountResultAddr);
 
                 return mountResult.mountPoint.data;
             }
 
-            ps4.FreeMemory(pid, mountAddr, Marshal.SizeOf(typeof(SceSaveDataTransferringMount)));
-            ps4.FreeMemory(pid, mountResultAddr, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+            free(mountAddr);
+            free(mountResultAddr);
 
             return "";
         }
