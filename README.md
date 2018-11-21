@@ -24,7 +24,7 @@ This program allows you to mount save data as READ/WRITE
 2) Start a game
 3) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
 4) Open the tool
-5) Click 'find playstation' (this doesn't always work) OR Enter the ip of your ps4 and press click 'Connect'
+5) Click 'find playstation' (this doesn't always work) OR Enter the ip of your ps4 and click 'Connect'
 6) Click 'Refresh Processes' and select your game in the combobox
 7) Click 'Setup'
 8) Click 'Find Dirs'
