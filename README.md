@@ -13,18 +13,15 @@ This program allows you to mount save data as READ/WRITE
 * Replace save files with an encrypted save
 * Use this on unexploited consoles
 
-### You need
-* To make sure you're using a recent ps4debug version, bin of the latest ps4debug (as of 11/14) is included in the download
-
 ## Prerequisites
 * PS4 5.05
 * FTP Client (eg filezilla, ...)
 ## Instructions
-1) Load [ps4debug](https://github.com/xemio/ps4debug)
+1) Load [jkpatch](https://github.com/xemio/jkpatch)
 2) Start a game
 3) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
 4) Open the tool
-5) Click 'find playstation' (this doesn't always work) OR Enter the ip of your ps4 and press click 'Connect'
+5) Enter the ip of your ps4 and click 'Connect'
 6) Click 'Refresh Processes' and select your game in the combobox
 7) Click 'Setup'
 8) Click 'Find Dirs'
