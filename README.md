@@ -1,4 +1,4 @@
-# Playstation 4 Save Mounter
+# Playstation 4 Save Mounter 1.2
 
 ## Summary
 This program allows you to mount save data as READ/WRITE
@@ -15,7 +15,7 @@ This program allows you to mount save data as READ/WRITE
 
 ### You need
 * To make sure you're using a recent ps4debug version, bin of the latest ps4debug (as of 11/14) is included in the download
-
+* To be able to run .net framework 2.0 executables (even windows 98 is able to do this)
 ## Prerequisites
 * PS4 5.05
 * FTP Client (eg filezilla, ...)
@@ -24,7 +24,7 @@ This program allows you to mount save data as READ/WRITE
 2) Start a game
 3) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
 4) Open the tool
-5) Click 'find playstation' (this doesn't always work) OR Enter the ip of your ps4 and click 'Connect'
+5) Enter the ip of your ps4 and click 'Connect'
 6) Click 'Refresh Processes' and select your game in the combobox
 7) Click 'Setup'
 8) Click 'Find Dirs'
