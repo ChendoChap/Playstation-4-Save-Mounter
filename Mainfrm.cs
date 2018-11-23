@@ -14,34 +14,28 @@ namespace PS4SDT
             MountMode_ComboBox.SelectedIndex = 0;
         }
 
+        private void SetStatus(string msg)
+        {
+            Status_Label.Text = $"STATUS: {msg}";
+        }
         private int pid;
         private ulong stub;
         private ulong libSceUserServiceBase = 0x0;
         private ulong libSceSaveDataBase = 0x0;
         private string mp;
         private uint mm = 0x1;
-        private void FindIP_Button_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                IP_TextBox.Text = PS4DBG.FindPlayStation();
-            }
-            catch
-            {
-                MessageBox.Show("Couldn't find ps4","Failed");
-            }
-        }
-
         private void Connect_Button_Click(object sender, EventArgs e)
         {
             ps4 = new PS4DBG(IP_TextBox.Text);
             ps4.Connect();
+            SetStatus("Connected");
         }
 
         private void RefreshProc_Button_Click(object sender, EventArgs e)
         {
             if(ps4.IsConnected)
             Processes_ComboBox.DataSource = ps4.GetProcessList().processes;
+            SetStatus("Refreshed Processes");
         }
 
         private void Setup_Button_Click(object sender, EventArgs e)
@@ -51,22 +45,29 @@ namespace PS4SDT
                 return;
             }
             var pm = ps4.GetProcessMaps(pid);
-            libSceUserServiceBase = pm.FindEntry("libSceUserService.sprx").start;
-            var   a   = pm.FindEntry("libSceSaveData.sprx")?.start;
-            if (a != null)
+            var tmp = pm.FindEntry("libSceSaveData.sprx")?.start;
+            if (tmp == null)
             {
-
-
-                libSceSaveDataBase = (ulong) a;
+                MessageBox.Show("savedata lib not found", "Error");
+                return;
             }
+            libSceSaveDataBase = (ulong)tmp;
+
+            tmp = pm.FindEntry("libSceUserService.sprx")?.start;
+            if (tmp == null)
+            {
+                MessageBox.Show("user service lib not found", "Error");
+                return;
+            }
+            libSceUserServiceBase = (ulong)tmp;
 
             if (pm.FindEntry("(NoName)clienthandler") == null)
             {
                 stub = ps4.InstallRPC(pid);
                 return;
             }
-
             stub = pm.FindEntry("(NoName)clienthandler").start;
+            SetStatus("Setup Done :)");
         }
 
         private void FindDirs_Button_Click(object sender, EventArgs e)
@@ -81,6 +82,7 @@ namespace PS4SDT
                 return;
             }
             var dirNameAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
+            var paramAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataParam)) * 1024);
             SceSaveDataDirNameSearchCond searchCond = new SceSaveDataDirNameSearchCond
             {
                 userId = InitialUser()
@@ -88,10 +90,20 @@ namespace PS4SDT
             SceSaveDataDirNameSearchResult searchResult = new SceSaveDataDirNameSearchResult
             {
                 dirNames = dirNameAddr,
-                dirNamesNum = 1024
+                dirNamesNum = 1024,
+                param = paramAddr,
             };
             Dirs_ComboBox.DataSource = Find(searchCond, searchResult);
             ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
+            ps4.FreeMemory(pid, paramAddr, Marshal.SizeOf(typeof(SceSaveDataParam)) * 1024);
+            if (Dirs_ComboBox.Items.Count > 0)
+            {
+                SetStatus($"Found {Dirs_ComboBox.Items.Count} Save Directories :D");
+            }
+            else
+            {
+                SetStatus("Found 0 Save Directories :(");
+            }
         }
 
         private void Mount_Button_Click(object sender, EventArgs e)
@@ -122,7 +134,14 @@ namespace PS4SDT
             mp = Mount(mount, mountResult);
 
             ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)));
-
+            if (mp != "")
+            {
+                SetStatus("Save Mounted");
+            }
+            else
+            {
+                SetStatus("Mouting Failed");
+            }
         }
 
         private void Unmount_Button_Click(object sender, EventArgs e)
@@ -137,7 +156,7 @@ namespace PS4SDT
             };
 
             Unmount(mountPoint);
-
+            SetStatus("Save Unmounted");
         }
 
         private void Processes_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -162,7 +181,7 @@ namespace PS4SDT
             return id;
         }
 
-        private string[] Find(SceSaveDataDirNameSearchCond searchCond, SceSaveDataDirNameSearchResult searchResult)
+        private SearchEntry[] Find(SceSaveDataDirNameSearchCond searchCond, SceSaveDataDirNameSearchResult searchResult)
         {
             var searchCondAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
             var searchResultAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
@@ -173,20 +192,28 @@ namespace PS4SDT
             if (ps4.Call(pid, stub, libSceSaveDataBase + offsets.sceSaveDataDirNameSearch, searchCondAddr, searchResultAddr) == 0)
             {
                 searchResult = ps4.ReadMemory<SceSaveDataDirNameSearchResult>(pid, searchResultAddr);
-                string[] dirs = new string[searchResult.hitNum];
+                SearchEntry[] sEntries = new SearchEntry[searchResult.hitNum];
                 for (uint i = 0; i < searchResult.hitNum; i++)
                 {
-                    dirs[i] = ps4.ReadMemory<string>(pid, searchResult.dirNames + i * 32);
+                    SceSaveDataParam tmp = ps4.ReadMemory<SceSaveDataParam>(pid, searchResult.param + i * (uint)Marshal.SizeOf(typeof(SceSaveDataParam)));
+                    sEntries[i] = new SearchEntry
+                    {
+                        dirName = ps4.ReadMemory<string>(pid, searchResult.dirNames + i * 32),
+                        title = tmp.title,
+                        subtitle = tmp.subTitle,
+                        detail = tmp.detail,
+                        time = new DateTime(1970, 1, 1).ToLocalTime().AddSeconds(tmp.mtime).ToString(),
+                };
                 }
                 ps4.FreeMemory(pid, searchCondAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
                 ps4.FreeMemory(pid, searchResultAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
-                return dirs;
+                return sEntries;
             }
 
             ps4.FreeMemory(pid, searchCondAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchCond)));
             ps4.FreeMemory(pid, searchResultAddr, Marshal.SizeOf(typeof(SceSaveDataDirNameSearchResult)));
 
-            return new string[0];
+            return new SearchEntry[0];
 
         }
 
@@ -254,7 +281,18 @@ namespace PS4SDT
         {
             MessageBox.Show("Aida & ChendoChap - save tool\r\ngolden - ps4debug\r\nLightningMods - tester", "Credits");
         }
-
+        class SearchEntry
+        {
+            public string dirName;
+            public string title;
+            public string subtitle;
+            public string detail;
+            public string time;
+            public override string ToString()
+            {
+                return dirName;
+            }
+        }
         private void MountMode_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             switch (MountMode_ComboBox.SelectedIndex)
@@ -263,9 +301,21 @@ namespace PS4SDT
                     mm = 0x01;
                     break;
                 case 1:
-                    mm = 10u;
+                    mm = 0x8 | 0x2;
                     break;
             }
+        }
+
+        private void Dirs_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Dirs_ComboBox.SelectedItem.GetType() != typeof(SearchEntry))
+            {
+                return;
+            }
+            Title_TextBox.Text = ((SearchEntry)Dirs_ComboBox.SelectedItem).title;
+            Subtitle_TextBox.Text = ((SearchEntry)Dirs_ComboBox.SelectedItem).subtitle;
+            Detail_TextBox.Text = ((SearchEntry)Dirs_ComboBox.SelectedItem).detail;
+            Date_TextBox.Text = ((SearchEntry)Dirs_ComboBox.SelectedItem).time;
         }
     }
 }
