@@ -341,6 +341,11 @@ namespace libdebug
         }
 
 
+        public PS4DBG()
+        {
+            enp = null;
+            sock = null;
+        }
 
         /// <summary>
         /// Initializes PS4DBG class

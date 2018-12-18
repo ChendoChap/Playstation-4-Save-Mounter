@@ -14,5 +14,6 @@ namespace PS4Saves
         public const int sceSaveDataUmount = 0x250C0;
         public const int sceSaveDataDirNameSearch = 0x25CA0;
         public const int sceSaveDataTransferringMount = 0x24F70;
+        public const int sceSaveDataInitialize3 = 0x24740;
     }
 }

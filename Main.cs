@@ -11,7 +11,7 @@ namespace PS4Saves
 {
     public partial class Main : Form
     {
-        PS4DBG ps4;
+        PS4DBG ps4 = new PS4DBG();
         private int pid;
         private ulong stub;
         private ulong libSceUserServiceBase = 0x0;
@@ -126,6 +126,19 @@ namespace PS4Saves
             }
         }
 
+        private Process[] filter(ProcessList list)
+        {
+            List<Process> procs = new List<Process>();
+            for(int i = 0; i < list.processes.Length; i++)
+            {
+                if (list.processes[i].name == "eboot.bin" || list.processes[i].name.EndsWith(".elf"))
+                {
+                    procs.Add(list.processes[i]);
+                }
+            }
+            return procs.ToArray();
+        }
+
         private void processesButton_Click(object sender, EventArgs e)
         {
             if (!ps4.IsConnected)
@@ -133,7 +146,7 @@ namespace PS4Saves
                 SetStatus("Not Connected");
                 return;
             }
-            processesComboBox.DataSource = ps4.GetProcessList().processes;
+            processesComboBox.DataSource = filter(ps4.GetProcessList());
             SetStatus("Refreshed Processes");
         }
 
@@ -180,6 +193,8 @@ namespace PS4Saves
             }
             userComboBox.DataSource = users.ToArray();
 
+            var ret = ps4.Call(pid, stub, libSceSaveDataBase + offsets.sceSaveDataInitialize3);
+            WriteLog($"sceSaveDataInitialize3 ret = 0x{ret:X}");
             //PATCHES
 			/* shows sce saves but doesn't mount them
             ps4.WriteMemory(pid, libSceSaveDataBase + 0x32998, "////");
@@ -260,7 +275,7 @@ namespace PS4Saves
             }
             else
             {
-                SetStatus("Mouting Failed");
+                SetStatus("Mounting Failed");
             }
         }
 
