@@ -1,4 +1,4 @@
-# Playstation 4 Save Mounter 1.2
+# Playstation 4 Save Mounter 1.3
 
 ## Summary
 This program allows you to mount save data as READ/WRITE
@@ -6,7 +6,7 @@ This program allows you to mount save data as READ/WRITE
 * Make decrypted copies of your saves
 * Replace saves with modified ones
 * Replace save files with someonelse's save files (share saves)
-
+* Create new saves
 
 
 ### You can't
@@ -19,15 +19,15 @@ This program allows you to mount save data as READ/WRITE
 ## Prerequisites
 * PS4 5.05
 * FTP Client (eg filezilla, ...)
-## Instructions
+## Instructions (mouting existing saves)
 1) Load [ps4debug](https://github.com/xemio/ps4debug)
 2) Start a game
 3) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
 4) Open the tool
 5) Enter the ip of your ps4 and click 'Connect'
-6) Click 'Refresh Processes' and select your game in the combobox
+6) Click 'Get Processes' and select your game in the combobox
 7) Click 'Setup'
-8) Click 'Find Dirs'
+8) Click 'Search'
 9) Select the save you want to mount in the combobox
 10) Select the mount permission in the combobox (default is READ ONLY)
 11) Click 'Mount'
@@ -54,7 +54,7 @@ Here's a workaround
 6) add a new record in the savedata table
 7) fill in the data and you're done
 8) replace the original database with the newer one
-9) Click 'find dirs' again, it should now add a temp entry in the combobox
+9) Click 'Search' again, it should now add a temp entry to the combobox
 10) proceed as usual
 11) go to /user/home/{userid}/savedata/{titleid}
 	* delete the original sce_sdmemory.bin and sdimg_sce_sdmemory

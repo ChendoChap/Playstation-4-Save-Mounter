@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PS4SDT
+namespace PS4Saves
 {
     [StructLayout(LayoutKind.Explicit, Size = 64)]
     public struct SceSaveDataMount2

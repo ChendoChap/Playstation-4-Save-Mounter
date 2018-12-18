@@ -20,7 +20,7 @@ namespace libdebug
         }
         public override string ToString()
         {
-            return $"[{pid}] {name}";
+            return $"[{pid:X}] {name}";
         }
     }
 

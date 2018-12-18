@@ -422,9 +422,8 @@ namespace libdebug
                 sock.SendBufferSize = NET_MAX_LENGTH;
 
                 sock.ReceiveTimeout = 1000 * 10;
-
-                sock.Connect(enp);
-                IsConnected = true;
+                IAsyncResult result = sock.BeginConnect(enp, null, null);
+                IsConnected = result.AsyncWaitHandle.WaitOne(3000);
             }
         }
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace PS4SDT
+namespace PS4Saves
 {
     static class Program
     {
@@ -14,7 +14,7 @@ namespace PS4SDT
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Mainfrm());
+            Application.Run(new Main());
         }
     }
 }
