@@ -17,7 +17,7 @@ namespace PS4Saves
         private ulong libSceUserServiceBase = 0x0;
         private ulong libSceSaveDataBase = 0x0;
         private int user = 0x0;
-        string mp = null;
+        string mp = "";
         bool log = false;
         
         public Main()
@@ -174,12 +174,7 @@ namespace PS4Saves
             }
             libSceUserServiceBase = (ulong)tmp;
 
-            if (pm.FindEntry("(NoName)clienthandler") == null)
-            {
-                stub = ps4.InstallRPC(pid);
-                return;
-            }
-            stub = pm.FindEntry("(NoName)clienthandler").start;
+            stub = pm.FindEntry("(NoName)clienthandler") == null ? ps4.InstallRPC(pid) : pm.FindEntry("(NoName)clienthandler").start;
 
             var ids = GetLoginList();
             List<User> users = new List<User>();
@@ -195,10 +190,12 @@ namespace PS4Saves
 
             var ret = ps4.Call(pid, stub, libSceSaveDataBase + offsets.sceSaveDataInitialize3);
             WriteLog($"sceSaveDataInitialize3 ret = 0x{ret:X}");
-            //PATCHES
-			/* shows sce saves but doesn't mount them
-            ps4.WriteMemory(pid, libSceSaveDataBase + 0x32998, "////");
-			*/
+          //PATCHES
+          //shows sce_ saves but doesn't mount them
+          /*ps4.WriteMemory(pid, libSceSaveDataBase + 0x32998, "///");
+            ps4.WriteMemory(pid, libSceSaveDataBase + 0x31694, "///");
+            ps4.WriteMemory(pid, libSceSaveDataBase + 0x31699, "///");*/
+          
 
             SetStatus("Setup Done :)");
         }
@@ -281,7 +278,7 @@ namespace PS4Saves
 
         private void unmountButton_Click(object sender, EventArgs e)
         {
-            if (mp == null)
+            if (mp == "")
             {
                 SetStatus("No save mounted");
                 return;
