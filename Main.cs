@@ -131,12 +131,34 @@ namespace PS4Saves
             List<Process> procs = new List<Process>();
             for(int i = 0; i < list.processes.Length; i++)
             {
-                if (list.processes[i].name == "eboot.bin" || list.processes[i].name.EndsWith(".elf"))
+                if (notSceCheck(list.processes[i].name))
                 {
                     procs.Add(list.processes[i]);
                 }
             }
             return procs.ToArray();
+        }
+
+        private string[] sceProcesses = { "SceVencProxy.elf", "SceVdecProxy.elf", "fs_cleaner.elf", "GnmCompositor.elf", "orbis_audiod.elf", "SceSysCore.elf", "SceSysAvControl.elf", "mini-syscore.elf" };
+        private bool notSceCheck(string name)
+        {
+            if (name == "eboot.bin")
+            {
+                return true;
+            }
+
+            if (name.EndsWith(".elf"))
+            {
+                for (int i = 0; i < sceProcesses.Length; i++)
+                {
+                    if (name == sceProcesses[i])
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
         }
 
         private void processesButton_Click(object sender, EventArgs e)
@@ -190,13 +212,21 @@ namespace PS4Saves
 
             var ret = ps4.Call(pid, stub, libSceSaveDataBase + offsets.sceSaveDataInitialize3);
             WriteLog($"sceSaveDataInitialize3 ret = 0x{ret:X}");
-          //PATCHES
-          //shows sce_ saves but doesn't mount them
-          /*ps4.WriteMemory(pid, libSceSaveDataBase + 0x32998, "///");
-            ps4.WriteMemory(pid, libSceSaveDataBase + 0x31694, "///");
-            ps4.WriteMemory(pid, libSceSaveDataBase + 0x31699, "///");*/
-          
+            
+           
+            //PATCHES
+            //SCE_ PATCHES
+            ps4.WriteMemory(pid, libSceSaveDataBase + 0x32998, (byte)0x00); // 'sce_' patch
+            ps4.WriteMemory(pid, libSceSaveDataBase + 0x31699, (byte)0x00); // 'sce_sdmemory' patch
+            ps4.WriteMemory(pid, libSceSaveDataBase + 0x01119, (byte)0x30); // '_' patch
 
+            var l = ps4.GetProcessList();
+            var s = l.FindProcess("SceShellCore");
+            var m = ps4.GetProcessMaps(s.pid);
+            var ex = m.FindEntry("executable");
+            //SHELLCORE PATCHES
+            ps4.WriteMemory(s.pid, ex.start + 0xD42843, (byte)0x00); // 'sce_sdmemory' patch
+            ps4.WriteMemory(s.pid, ex.start + 0x7E4DC0, new byte[]{0x48, 0x31, 0xC0, 0xC3}); //verify keystone patch
             SetStatus("Setup Done :)");
         }
 
@@ -263,7 +293,7 @@ namespace PS4Saves
 
             };
             ps4.WriteMemory(pid, dirNameAddr, dirName);
-            mp = Mount(mount, mountResult);
+            mp = Mount2(mount, mountResult);
 
             ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)));
             if (mp != "")
@@ -330,7 +360,7 @@ namespace PS4Saves
 
             };
             ps4.WriteMemory(pid, dirNameAddr, dirName);
-            var mp = Mount(mount, mountResult);
+            var mp = Mount2(mount, mountResult);
             ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)));
             if (mp != "")
             {
@@ -435,7 +465,7 @@ namespace PS4Saves
 
         }
 
-        private string Mount(SceSaveDataMount2 mount, SceSaveDataMountResult mountResult)
+        private string Mount2(SceSaveDataMount2 mount, SceSaveDataMountResult mountResult)
         {
             var mountAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMount2)));
             var mountResultAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
@@ -471,6 +501,30 @@ namespace PS4Saves
             mp = null;
         }
 
+        private string Mount(SceSaveDataMount mount, SceSaveDataMountResult mountResult)
+        {
+            var mountAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMount)));
+            var mountResultAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+            ps4.WriteMemory(pid, mountAddr, mount);
+            ps4.WriteMemory(pid, mountResultAddr, mountResult);
+
+            var ret = ps4.Call(pid, stub, libSceSaveDataBase + offsets.sceSaveDataMount, mountAddr, mountResultAddr);
+            WriteLog($"sceSaveDataMount ret = 0x{ret:X}");
+            if (ret == 0)
+            {
+                mountResult = ps4.ReadMemory<SceSaveDataMountResult>(pid, mountResultAddr);
+
+                ps4.FreeMemory(pid, mountAddr, Marshal.SizeOf(typeof(SceSaveDataMount)));
+                ps4.FreeMemory(pid, mountResultAddr, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+
+                return mountResult.mountPoint.data;
+            }
+
+            ps4.FreeMemory(pid, mountAddr, Marshal.SizeOf(typeof(SceSaveDataMount)));
+            ps4.FreeMemory(pid, mountResultAddr, Marshal.SizeOf(typeof(SceSaveDataMountResult)));
+
+            return "";
+        }
         private string TransferMount(SceSaveDataTransferringMount mount, SceSaveDataMountResult mountResult)
         {
             var mountAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataTransferringMount)));
@@ -536,6 +590,135 @@ namespace PS4Saves
             {
                 return name;
             }
+        }
+
+        private void tSearchButton_Click(object sender, EventArgs e)
+        {
+            if (pid == 0)
+            {
+                SetStatus("No Process Selected");
+                return;
+            }
+            var pm = ps4.GetProcessMaps(pid);
+            if (pm.FindEntry("(NoName)clienthandler") == null)
+            {
+                SetStatus("RPC Stub Not Found");
+                return;
+            }
+
+            titleIdTextBox.Text = titleIdTextBox.Text.ToUpper().Replace("-", "").Replace(" ","");
+            if (titleIdTextBox.Text.Length != 9)
+            {
+                SetStatus("Invalid Title");
+                return;
+            }
+            var dirNameAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
+            var paramAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataParam)) * 1024);
+            var titleidAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataTitleId)));
+            SceSaveDataTitleId titleid = new SceSaveDataTitleId
+            {
+                data = titleIdTextBox.Text
+            };
+            SceSaveDataDirNameSearchCond searchCond = new SceSaveDataDirNameSearchCond
+            {
+                userId = GetUser(),
+                titleId = titleidAddr
+            };
+            SceSaveDataDirNameSearchResult searchResult = new SceSaveDataDirNameSearchResult
+            {
+                dirNames = dirNameAddr,
+                dirNamesNum = 1024,
+                param = paramAddr,
+            };
+            ps4.WriteMemory(pid, titleidAddr, titleid);
+            tDirsComboBox.DataSource = Find(searchCond, searchResult);
+            ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)) * 1024);
+            ps4.FreeMemory(pid, paramAddr, Marshal.SizeOf(typeof(SceSaveDataParam)) * 1024);
+            ps4.FreeMemory(pid, titleidAddr, Marshal.SizeOf(typeof(SceSaveDataTitleId)));
+            if (tDirsComboBox.Items.Count > 0)
+            {
+                SetStatus($"Found {tDirsComboBox.Items.Count} Save Directories :D");
+            }
+            else
+            {
+                SetStatus("Found 0 Save Directories :(");
+            }
+        }
+
+        private void tMountButton_Click(object sender, EventArgs e)
+        {
+            if (tDirsComboBox.Items.Count == 0)
+            {
+                return;
+            }
+            var dirNameAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataDirName)));
+            var fingerprintAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataFingerprint)));
+            var titleidAddr = ps4.AllocateMemory(pid, Marshal.SizeOf(typeof(SceSaveDataTitleId)));
+            SceSaveDataDirName dirName = new SceSaveDataDirName
+            {
+                data = tDirsComboBox.Text
+            };
+            SceSaveDataFingerprint fingerprint = new SceSaveDataFingerprint
+            {
+                //verify keystone patch is applied
+                data = "0000000000000000000000000000000000000000000000000000000000000000"
+            };
+            SceSaveDataTitleId titleid = new SceSaveDataTitleId
+            {
+                data = titleIdTextBox.Text
+            };
+            SceSaveDataMount mount = new SceSaveDataMount
+            {
+                userId = GetUser(),
+                titleId = titleidAddr,
+                dirName = dirNameAddr,
+                fingerprint = fingerprintAddr,
+                mountMode  = 0x01,
+
+            };
+
+            SceSaveDataMountResult mountResult = new SceSaveDataMountResult();
+            ps4.WriteMemory(pid, dirNameAddr, dirName);
+            ps4.WriteMemory(pid, fingerprintAddr, fingerprint);
+            ps4.WriteMemory(pid, titleidAddr, titleid);
+            mp = Mount(mount, mountResult);
+
+            ps4.FreeMemory(pid, dirNameAddr, Marshal.SizeOf(typeof(SceSaveDataDirName)));
+            ps4.FreeMemory(pid, fingerprintAddr, Marshal.SizeOf(typeof(SceSaveDataFingerprint)));
+            ps4.FreeMemory(pid, titleidAddr, Marshal.SizeOf(typeof(SceSaveDataTitleId)));
+            if (mp != "")
+            {
+                SetStatus($"Save Mounted in {mp}");
+            }
+            else
+            {
+                SetStatus("T Mounting Failed");
+            }
+        }
+
+        private void tUnmountButton_Click(object sender, EventArgs e)
+        {
+            if (mp == "")
+            {
+                SetStatus("No save mounted");
+                return;
+            }
+            SceSaveDataMountPoint mountPoint = new SceSaveDataMountPoint
+            {
+                data = mp,
+            };
+
+            Unmount(mountPoint);
+            mp = null;
+            SetStatus("Save Unmounted");
+        }
+
+        private void tDirsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            titleTextBox.Text = ((SearchEntry)tDirsComboBox.SelectedItem).title;
+            subtitleTextBox.Text = ((SearchEntry)tDirsComboBox.SelectedItem).subtitle;
+            detailsTextBox.Text = ((SearchEntry)tDirsComboBox.SelectedItem).detail;
+            dateTextBox.Text = ((SearchEntry)tDirsComboBox.SelectedItem).time;
         }
     }
 }

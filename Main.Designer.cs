@@ -59,11 +59,18 @@
             this.titleLabel = new System.Windows.Forms.Label();
             this.sizeToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.statusLabel = new System.Windows.Forms.Label();
+            this.tMountGroupBox = new System.Windows.Forms.GroupBox();
+            this.tUnmountButton = new System.Windows.Forms.Button();
+            this.tMountButton = new System.Windows.Forms.Button();
+            this.tDirsComboBox = new System.Windows.Forms.ComboBox();
+            this.tSearchButton = new System.Windows.Forms.Button();
+            this.titleIdTextBox = new System.Windows.Forms.TextBox();
             this.connectionGroupBox.SuspendLayout();
             this.createGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sizeTrackBar)).BeginInit();
             this.mountGroupBox.SuspendLayout();
             this.infoGroupBox.SuspendLayout();
+            this.tMountGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // ipTextBox
@@ -359,18 +366,82 @@
             this.statusLabel.TabIndex = 13;
             this.statusLabel.Text = "Status:";
             // 
+            // tMountGroupBox
+            // 
+            this.tMountGroupBox.Controls.Add(this.tUnmountButton);
+            this.tMountGroupBox.Controls.Add(this.tMountButton);
+            this.tMountGroupBox.Controls.Add(this.tDirsComboBox);
+            this.tMountGroupBox.Controls.Add(this.tSearchButton);
+            this.tMountGroupBox.Controls.Add(this.titleIdTextBox);
+            this.tMountGroupBox.Location = new System.Drawing.Point(794, 12);
+            this.tMountGroupBox.Name = "tMountGroupBox";
+            this.tMountGroupBox.Size = new System.Drawing.Size(247, 151);
+            this.tMountGroupBox.TabIndex = 14;
+            this.tMountGroupBox.TabStop = false;
+            this.tMountGroupBox.Text = "Mount saves by title id (Read only)";
+            // 
+            // tUnmountButton
+            // 
+            this.tUnmountButton.Location = new System.Drawing.Point(6, 112);
+            this.tUnmountButton.Name = "tUnmountButton";
+            this.tUnmountButton.Size = new System.Drawing.Size(228, 23);
+            this.tUnmountButton.TabIndex = 13;
+            this.tUnmountButton.Text = "Unmount";
+            this.tUnmountButton.UseVisualStyleBackColor = true;
+            this.tUnmountButton.Click += new System.EventHandler(this.tUnmountButton_Click);
+            // 
+            // tMountButton
+            // 
+            this.tMountButton.Location = new System.Drawing.Point(6, 83);
+            this.tMountButton.Name = "tMountButton";
+            this.tMountButton.Size = new System.Drawing.Size(228, 23);
+            this.tMountButton.TabIndex = 12;
+            this.tMountButton.Text = "Transfer Mount";
+            this.tMountButton.UseVisualStyleBackColor = true;
+            this.tMountButton.Click += new System.EventHandler(this.tMountButton_Click);
+            // 
+            // tDirsComboBox
+            // 
+            this.tDirsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tDirsComboBox.FormattingEnabled = true;
+            this.tDirsComboBox.Location = new System.Drawing.Point(6, 56);
+            this.tDirsComboBox.Name = "tDirsComboBox";
+            this.tDirsComboBox.Size = new System.Drawing.Size(228, 21);
+            this.tDirsComboBox.TabIndex = 10;
+            this.tDirsComboBox.SelectedIndexChanged += new System.EventHandler(this.tDirsComboBox_SelectedIndexChanged);
+            // 
+            // tSearchButton
+            // 
+            this.tSearchButton.Location = new System.Drawing.Point(142, 29);
+            this.tSearchButton.Name = "tSearchButton";
+            this.tSearchButton.Size = new System.Drawing.Size(92, 21);
+            this.tSearchButton.TabIndex = 7;
+            this.tSearchButton.Text = "Search";
+            this.tSearchButton.UseVisualStyleBackColor = true;
+            this.tSearchButton.Click += new System.EventHandler(this.tSearchButton_Click);
+            // 
+            // titleIdTextBox
+            // 
+            this.titleIdTextBox.Location = new System.Drawing.Point(6, 30);
+            this.titleIdTextBox.MaxLength = 10;
+            this.titleIdTextBox.Name = "titleIdTextBox";
+            this.titleIdTextBox.Size = new System.Drawing.Size(130, 20);
+            this.titleIdTextBox.TabIndex = 1;
+            this.titleIdTextBox.Text = "CUSA00001";
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 362);
+            this.ClientSize = new System.Drawing.Size(1063, 362);
+            this.Controls.Add(this.tMountGroupBox);
             this.Controls.Add(this.statusLabel);
             this.Controls.Add(this.infoGroupBox);
             this.Controls.Add(this.mountGroupBox);
             this.Controls.Add(this.createGroupBox);
             this.Controls.Add(this.connectionGroupBox);
             this.Name = "Main";
-            this.Text = "Playstation 4 Save Mounter 1.3.1 [ps4debug]";
+            this.Text = "Playstation 4 Save Mounter 1.4.0 [ps4debug]";
             this.connectionGroupBox.ResumeLayout(false);
             this.connectionGroupBox.PerformLayout();
             this.createGroupBox.ResumeLayout(false);
@@ -379,6 +450,8 @@
             this.mountGroupBox.ResumeLayout(false);
             this.infoGroupBox.ResumeLayout(false);
             this.infoGroupBox.PerformLayout();
+            this.tMountGroupBox.ResumeLayout(false);
+            this.tMountGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -416,6 +489,12 @@
         private System.Windows.Forms.Label subtitleLabel;
         private System.Windows.Forms.TextBox titleTextBox;
         private System.Windows.Forms.Label titleLabel;
+        private System.Windows.Forms.GroupBox tMountGroupBox;
+        private System.Windows.Forms.Button tUnmountButton;
+        private System.Windows.Forms.Button tMountButton;
+        private System.Windows.Forms.ComboBox tDirsComboBox;
+        private System.Windows.Forms.Button tSearchButton;
+        private System.Windows.Forms.TextBox titleIdTextBox;
     }
 }
 

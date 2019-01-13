@@ -2,6 +2,17 @@
 
 namespace PS4Saves
 {
+    [StructLayout(LayoutKind.Explicit, Size = 80)]
+    public struct SceSaveDataMount
+    {
+        [FieldOffset(0x0)] public int userId;
+        [FieldOffset(0x8)] public ulong titleId;
+        [FieldOffset(0x10)] public ulong dirName;
+        [FieldOffset(0x18)] public ulong fingerprint;
+        [FieldOffset(0x20)] public ulong blocks;
+        [FieldOffset(0x28)] public uint mountMode;
+    }
+
     [StructLayout(LayoutKind.Explicit, Size = 64)]
     public struct SceSaveDataMount2
     {
@@ -50,8 +61,8 @@ namespace PS4Saves
     [StructLayout(LayoutKind.Sequential, Size = 80)]
     public struct SceSaveDataFingerprint
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 65)]
-        public byte[] data;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 65)]
+        public string data;
     }
     [StructLayout(LayoutKind.Explicit, Size = 64)]
     public struct SceSaveDataDirNameSearchCond
