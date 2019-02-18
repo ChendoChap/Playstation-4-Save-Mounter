@@ -155,13 +155,13 @@ namespace libdebug
 
             return Encoding.ASCII.GetString(data, offset, length);
         }
-        private static byte[] SubArray(byte[] data, int offset, int length)
+        public static byte[] SubArray(byte[] data, int offset, int length)
         {
             byte[] bytes = new byte[length];
             Buffer.BlockCopy(data, offset, bytes, 0, length);
             return bytes;
         }
-        private static object GetObjectFromBytes(byte[] buffer, Type type)
+        public static object GetObjectFromBytes(byte[] buffer, Type type)
         {
             int size = Marshal.SizeOf(type);
 
@@ -426,9 +426,10 @@ namespace libdebug
                 sock.ReceiveBufferSize = NET_MAX_LENGTH;
                 sock.SendBufferSize = NET_MAX_LENGTH;
 
-                sock.ReceiveTimeout = 1000 * 10;
+                sock.ReceiveTimeout = -1;
                 IAsyncResult result = sock.BeginConnect(enp, null, null);
-                IsConnected = result.AsyncWaitHandle.WaitOne(3000);
+                result.AsyncWaitHandle.WaitOne(3000);
+                IsConnected = sock.Connected;
             }
         }
 

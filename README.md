@@ -1,16 +1,16 @@
-# Playstation 4 Save Mounter 1.4
+# Playstation 4 Save Mounter 1.5
 
 ## Summary
-This program allows you to mount save data as READ/WRITE
+This program allows you to mount save data with RW permission
 ### You can
-* Make decrypted copies of your saves
+* Make decrypted copies of any save (as long as it's encrypted with keys <= 5.05)
 * Replace saves with modified ones
-* Replace save files with someonelse's save files (share saves)
+* Replace save files with someone else's save files (share saves)
 * Create new saves
 
 
 ### You can't
-* Replace save files with an encrypted save
+* Replace save files with an encrypted save (if it's encrypted with keys > 5.05)
 * Use this on unexploited consoles
 
 ### You need
@@ -19,21 +19,43 @@ This program allows you to mount save data as READ/WRITE
 ## Prerequisites
 * PS4 5.05
 * FTP Client (eg filezilla, ...)
-## Instructions (mounting existing saves)
+## Instructions
+### Mounting saves
 1) Load [ps4debug](https://github.com/xemio/ps4debug)
-2) Start a game
-3) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
-4) Open the tool
-5) Enter the ip of your ps4 and click 'Connect'
-6) Click 'Get Processes' and select your game in the combobox
-7) Click 'Setup'
-8) Click 'Search'
-9) Select the save you want to mount in the combobox
-10) Click 'Mount'
-11) Your save is now mounted and accessible from ftp in /mnt/pfs/ & in /mnt/sandbox/{title}/savedataX (it's the same just a different dir)
-12) After you're done copying/replacing files click 'Unmount'
+2) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
+3) Open the tool
+4) Enter the ip of your ps4 and click 'Connect'
+5) Click 'Setup' & select the user you want to use in the combobox
+6) Click 'Get Games' & select the game you want to use in the combobox
+7) Click 'Search' & select the save you want to mount
+8) Click 'Mount'
+9) Your save is now mounted and accessible from ftp in /mnt/pfs/ & in /mnt/sandbox/NPXS20001_000/savedataX (it's the same just a different dir)
+10) After you're done copying/replacing files click 'Unmount'
+### Creating saves
+1) Load [ps4debug](https://github.com/xemio/ps4debug)
+2) Load [FTP](https://github.com/xvortex/ps4-ftp-vtx)
+3) Open the tool
+4) Enter the ip of your ps4 and click 'Connect'
+5) Click 'Setup' & select the user you want to use in the combobox
+6) Click 'Get Games' & select the game you want to use in the combobox
+7) Enter the desired save directory name in the textbox
+8) Use the slider to choose the save's size
+9) Click 'Create Save'
+10) Click 'Search' to refresh the save list
 
-**don't replace files in sce_sys directory, it is unnecessary and will probably corrupt your save**
+## Important
+
+**- you don't need to start a game to modify its saves, it's actually better not to have one open because some games like gow 4 may overwrite parts of a save while you're busy modifying it resulting in a corrupted save.**
+
+**- don't replace files in sce_sys directory, it is unnecessary and will probably corrupt your save**  
+
+**- the workaround method is obsolete since update 1.4**  
+
+**- some games require you to create your own save data with the appropriate name & size, fallout 4 is such a game. This problem was discussed in [issue #5](https://github.com/ChendoChap/Playstation-4-Save-Mounter/issues/5)**
+
+**- Don't forget to regularly make backups of your saves and the savedata database, the ps4 deletes all your saves if the database gets corrupted while this mostly only happens when you actively mess with it, it's always better to be prepared**
+
+**- It's possible to mount someone else's encrypted saves but there's currently no 'clean' way to do it. you need to temporarily replace the sdimg_xxx and the xxx.bin files with the ones you downloaded in your user's savedata directory. Be sure to restore the original files after you extracted the save because the ps4 could throw a fit if you reboot while those files are still there.**
 
 
 ## Authors

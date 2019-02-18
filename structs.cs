@@ -86,12 +86,12 @@ namespace PS4Saves
     [StructLayout(LayoutKind.Explicit, Size = 1328)]
     public struct SceSaveDataParam
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        [FieldOffset(0x0)] public string title;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        [FieldOffset(0x80)] public string subTitle;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
-        [FieldOffset(0x100)] public string detail;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+        [FieldOffset(0x0)] public byte[] title;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+        [FieldOffset(0x80)] public byte[] subTitle;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
+        [FieldOffset(0x100)] public byte[] detail;
         [FieldOffset(0x500)] public uint userParam;
         [FieldOffset(0x508)] public long mtime;
     }
